@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 
 public class PlayerController : MonoBehaviour
@@ -21,6 +23,8 @@ public class PlayerController : MonoBehaviour
     public float controlDelay = 0.2f; // Temporarilly ignores horizontal input after a wall jump
     public int lives = 3; // Number of lives
     public TextMeshProUGUI livesText; // Reference to the UI Text component
+    public GameObject DeathScreen;
+    public GameObject GameOverScreen;
 
 
     private float jumpTimeCounter; // Counts down to zero
@@ -41,11 +45,13 @@ public class PlayerController : MonoBehaviour
         jumpTimeCounter = jumpTime;
         animator = GetComponent<Animator>();
 
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName("Level1"));
+
         // Set the respawn point to the initial position
-        respawnPoint = transform.position;
+        //respawnPoint = transform.position;
 
         // Update the lives text
-        livesText.text = "Lives: " + lives;
+        //livesText.text = "Lives: " + lives;
     }
 
     // Update is called once per frame
@@ -60,14 +66,19 @@ public class PlayerController : MonoBehaviour
         isTouchingLeftWall = Physics2D.OverlapCircle(leftWallCheckPoint, groundCheckRadius, wallLayer); // Checks if player is touching left wall
         isTouchingRightWall = Physics2D.OverlapCircle(rightWallCheckPoint, groundCheckRadius, wallLayer); // Right side
 
+        // In your Update method, draw debug lines to visualize the wall detection
+        Debug.DrawRay(transform.position, Vector2.right * wallCheckDistance, isTouchingRightWall ? Color.green : Color.red);
+        Debug.DrawRay(transform.position, Vector2.left * wallCheckDistance, isTouchingLeftWall ? Color.green : Color.red);
+
+
         float moveHorizontal = Input.GetAxis("Horizontal");
 
-        livesText.text = "Lives: " + lives; // Update the UI Text
+        //livesText.text = "Lives: " + lives; // Update the UI Text
 
         // If the player's y-coordinate drops below -10, respawn
         if (transform.position.y < -10)
         {
-            Respawn();
+            GameManager.instance.PlayerDied();
         }
 
         if (Mathf.Abs(moveHorizontal) > 0.1f)
@@ -88,6 +99,10 @@ public class PlayerController : MonoBehaviour
 
         if (Time.time >= controlRestoreTime)
         {
+            // Gradually restore control over 0.1 seconds
+            float t = (Time.time - controlRestoreTime) / 0.1f;
+            moveHorizontal = Mathf.Lerp(0, moveHorizontal, t);
+
             Vector3 movement = new Vector3(moveHorizontal, 0, 0);
 
             animator.SetFloat("Speed", Mathf.Abs(rb.velocity.x));
@@ -111,6 +126,11 @@ public class PlayerController : MonoBehaviour
                 animator.SetBool("IsRunning", false);
             }
 
+        }
+        else if (Time.time < controlRestoreTime)
+        {
+            float t = (Time.time - (controlRestoreTime - controlDelay)) / controlDelay;
+            moveHorizontal = Mathf.Lerp(0, moveHorizontal, t);
         }
         Flip();
 
@@ -145,6 +165,10 @@ public class PlayerController : MonoBehaviour
         {
             Vector2 direction = isTouchingLeftWall ? Vector2.right : Vector2.left;
 
+            // Reset vertical velocity to ensure consistent jumps
+            rb.velocity = new Vector2(rb.velocity.x, 0);
+
+            // Add force 
             rb.velocity = new Vector2(wallJumpForceHorizontal * direction.x, wallJumpForceVertical);
             controlRestoreTime = Time.time + controlDelay;
 
@@ -174,16 +198,7 @@ public class PlayerController : MonoBehaviour
     {
         if (other.isTrigger && other.gameObject.CompareTag("Enemy"))
         {
-            Respawn();
+            GameManager.instance.PlayerDied();
         }
     }
-
-    void Respawn()
-    {
-        lives--;
-        livesText.text = "Lives: " + lives;
-        transform.position = respawnPoint;
-    }
-
-
 }
