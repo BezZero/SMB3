@@ -25,6 +25,9 @@ public class PlayerController : MonoBehaviour
     public TextMeshProUGUI livesText; // Reference to the UI Text component
     public GameObject DeathScreen;
     public GameObject GameOverScreen;
+    public int coinCount = 0;
+    public TextMeshProUGUI coinCountText;
+    public LayerMask blockLayer;
 
 
     private float jumpTimeCounter; // Counts down to zero
@@ -186,6 +189,21 @@ public class PlayerController : MonoBehaviour
         {
             animator.SetBool("IsWalking", false);
         }
+
+        bool isJumping = !isGrounded && rb.velocity.y > 0;
+
+        if (isJumping) // The isJumping flag should be true when the player is moving upwards in a jump.
+        {
+            // Cast a ray upwards to check for a breakable block.
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.up, 1f, blockLayer);
+
+            if (hit.collider != null && hit.collider.GetComponent<BreakableBlock>() != null)
+            {
+                // Break the block
+                hit.collider.GetComponent<BreakableBlock>().Break();
+            }
+        }
+
     }
 
     void Flip()
@@ -199,6 +217,13 @@ public class PlayerController : MonoBehaviour
         if (other.isTrigger && other.gameObject.CompareTag("Enemy"))
         {
             GameManager.instance.PlayerDied();
+        }
+
+        if (other.gameObject.CompareTag("Coin"))
+        {
+            GameManager.instance.CoinCollected();
+
+            Destroy(other.gameObject);
         }
     }
 }

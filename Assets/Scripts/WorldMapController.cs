@@ -10,7 +10,7 @@ public class WorldMapController : MonoBehaviour
 
     void Start()
     {
-        int highestLevelReached = GameManager.instance.highestLevelReached;
+        int highestLevelReached = GameManager.instance.highestLevelReached + 1;
 
         for (int i = 0; i < levelButtons.Length; i++) 
         {
@@ -44,5 +44,11 @@ public class WorldMapController : MonoBehaviour
     {
         SceneManager.UnloadSceneAsync("WorldMap");
         SceneManager.LoadScene("MainMenu", LoadSceneMode.Additive);
+    }
+
+    public void GoToShop()
+    {
+        SceneManager.UnloadSceneAsync("WorldMap");
+        SceneManager.LoadScene("Shop", LoadSceneMode.Additive);
     }
 }

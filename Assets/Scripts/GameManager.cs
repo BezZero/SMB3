@@ -12,6 +12,9 @@ public class GameManager : MonoBehaviour
     public GameObject GameOverScreen;
     public GameObject livesTextObject;
     public int highestLevelReached;
+    public int coinCount = 0;
+    public TextMeshProUGUI coinCountText;
+    public GameObject coinCountTextObject;
 
     // Singleton instance
     public static GameManager instance = null;
@@ -47,6 +50,7 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene("MainMenu", LoadSceneMode.Additive);
         GameOverScreen.SetActive(false);
         livesTextObject.SetActive(false);
+        coinCountTextObject.SetActive(false);  
     }
 
     // Start is called before the first frame update
@@ -62,6 +66,7 @@ public class GameManager : MonoBehaviour
         if (scene.name.StartsWith("Level"))
         {
             livesTextObject.SetActive(true);
+            coinCountTextObject.SetActive(true);
             UpdateLivesText();
         }
     }
@@ -88,6 +93,15 @@ public class GameManager : MonoBehaviour
             DeathScreen.SetActive(true); // Show Death Screen
             StartCoroutine(RespawnPlayer()); // After some delay respawn
         }
+    }
+
+    public void CoinCollected()
+    {
+        coinCount++;
+
+        coinCountText.text = "Coins: " + coinCount;
+
+        PlayerPrefs.SetInt("CoinCount", coinCount);
     }
 
     void UpdateLivesText()
