@@ -33,4 +33,9 @@ public class EnemyController : MonoBehaviour
             }
         }
     }
+
+    public void FellEnemy()
+    {
+        Destroy(this.gameObject);
+    }
 }

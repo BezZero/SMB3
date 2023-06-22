@@ -69,10 +69,6 @@ public class PlayerController : MonoBehaviour
         isTouchingLeftWall = Physics2D.OverlapCircle(leftWallCheckPoint, groundCheckRadius, wallLayer); // Checks if player is touching left wall
         isTouchingRightWall = Physics2D.OverlapCircle(rightWallCheckPoint, groundCheckRadius, wallLayer); // Right side
 
-        // In your Update method, draw debug lines to visualize the wall detection
-        Debug.DrawRay(transform.position, Vector2.right * wallCheckDistance, isTouchingRightWall ? Color.green : Color.red);
-        Debug.DrawRay(transform.position, Vector2.left * wallCheckDistance, isTouchingLeftWall ? Color.green : Color.red);
-
 
         float moveHorizontal = Input.GetAxis("Horizontal");
 
@@ -224,6 +220,11 @@ public class PlayerController : MonoBehaviour
             GameManager.instance.CoinCollected();
 
             Destroy(other.gameObject);
+        }
+
+        if (other.gameObject.CompareTag("Kill"))
+        {
+            Destroy(other.gameObject.transform.parent.gameObject);
         }
     }
 }
